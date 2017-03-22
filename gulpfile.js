@@ -54,7 +54,7 @@ gulp.task('webserver', function () {
 
 // 编译 Sass
 var cssFiles = [
-  './src/styles/app.scss'
+  './src/styles/index.scss'
 ]
 gulp.task('sass', function () {
   gulp.src(cssFiles)
