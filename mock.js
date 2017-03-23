@@ -1,3 +1,10 @@
+/**
+ * 
+ * @authors shenbao 
+ * @date    2017-03-21 
+ * 
+ */
+
 var url = require('url');
 var fs = require('fs');
 

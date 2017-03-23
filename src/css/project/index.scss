@@ -3,7 +3,21 @@
 @import "../../common/css/base/html.css";
 @import "../../common/css/core/body.scss";
 
-div {
-    font-size: 20px;
+* {
+    padding: 0;
+    margin: 0;
 }
+html,body{
+    background: #FFF;
+    ul {
+        list-style: none;
+        li {
+            background: burlywood;
+            span {
+                color: blue;
+            }
+        }
+    }
+}
+
 
