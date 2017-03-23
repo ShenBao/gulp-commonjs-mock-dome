@@ -33,7 +33,7 @@ $.ajax({
         var json = data.attachment.devDependencies;
         var str = '';
         for (var key in json){
-            console.log(key + ':' + json[key]);
+            console.log(key);
             str += '<li><span class="color-red">'+key+'</span> : '+json[key]+'</li>';
         }
         $('ul').html(str);
