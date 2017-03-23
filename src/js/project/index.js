@@ -37,6 +37,7 @@ $.ajax({
             str += '<li><span class="color-red">'+key+'</span> : '+json[key]+'</li>';
         }
         $('ul').html(str);
+        $('b').html('author: '+ data.attachment.author)
 
     },
     error : function(msg) {
