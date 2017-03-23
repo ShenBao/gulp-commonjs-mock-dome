@@ -2,6 +2,8 @@
 
 利用gulp实现本地服务、mock数据、css预处理、js模块化、打包压缩、版本号替换等功能.
 
+ps：构建多页面前端项目
+
 
 目前用到：
 - gulp
@@ -16,3 +18,7 @@
 - imports-loader
 - node-sass
 - vinyl-named
+
+
+
+Created by ShenBao
