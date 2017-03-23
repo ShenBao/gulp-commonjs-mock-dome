@@ -1,5 +1,4 @@
 
-//
 var gulp = require('gulp');
 
 var webserver = require('gulp-webserver');
@@ -17,12 +16,47 @@ var revCollector = require('gulp-rev-collector');
 var url = require('url');
 var fs = require('fs');
 
-// 拷贝 index 到 app
-gulp.task('copy-index', function () {
-  gulp.src('./index.html')
-    .pipe(gulp.dest('./app'));
-});
+var clean = require('gulp-clean');
 
+var mockFn = require('./mock.js');
+
+var srcFiles = {
+    html: './src/html/**/*.html',
+    css: '',
+    scss: './src/css/**/*.scss',
+    js: './src/js/**/*.js',
+    img: ''
+};
+var distFiles = {
+    html: './dist/html/',
+    css: '',
+    scss: './dist/css',
+    js: './dist/js/',
+    img: ''
+};
+var version = {
+    css: './ver/css',
+    js: './ver/js',
+    htmlVer: './ver/**/*.json'
+};
+var versionFiles = {
+    html: './src/html/**/*.html',
+    css: './dist/css/**/*.css',
+    js: './dist/js/**/*.js',
+};
+
+// =========================================================================================================
+gulp.task('clean', function() {
+    gulp.src(['dist','ver'], {read: false})
+    .pipe(clean({force: true}));
+});
+// =========================================================================================================
+// 拷贝 html
+gulp.task('html', function () {
+  gulp.src(srcFiles.html)
+    .pipe(gulp.dest(distFiles.html));
+});
+// =========================================================================================================
 // 启动 webserver
 gulp.task('webserver', function () {
   gulp.src('./')
@@ -35,45 +69,22 @@ gulp.task('webserver', function () {
         path: './'
       },
       middleware: function (req, res, next) {
-        var urlObj = url.parse(req.url, true);
-        switch (urlObj.pathname) {
-          case '/api/getLivelist.php':
-            res.setHeader('Content-type', 'application/json');
-            fs.readFile('./mock/livelist.json', 'utf-8', function (err, data) {
-              res.end(data);
-            });
-            return;
-          case '/api/getLivelistmore.php':
-            // ....
-            return;
-        }
-        next();
+        mockFn.mock(req, res, next);
       }
     }))
 });
-
+// =========================================================================================================
 // 编译 Sass
-var cssFiles = [
-  './src/styles/index.scss'
-]
 gulp.task('sass', function () {
-  gulp.src(cssFiles)
+  gulp.src(srcFiles.scss)
     .pipe(sass().on('error', sass.logError))
     .pipe(minifyCSS())
-    .pipe(gulp.dest('./app/prd/styles'));
+    .pipe(gulp.dest(distFiles.scss));
 });
-gulp.task('css', function () {
-  gulp.src('./src/styles/*.css')
-    .pipe(minifyCSS())
-    .pipe(gulp.dest('./app/prd/styles'));
-});
-
+// =========================================================================================================
 // js 模块化
-var jsFiles = [
-  './src/scripts/app.js'
-];
-gulp.task('packjs', function () {
-  gulp.src(jsFiles)
+gulp.task('js', function () {
+  gulp.src(srcFiles.js)
     // js commonjs规范模块化编译
     .pipe(named())
     .pipe(webpack({
@@ -93,48 +104,39 @@ gulp.task('packjs', function () {
       // 在控制台上输出
       return this.end();
     }))
-    .pipe(gulp.dest('./app/prd/scripts'));
+    .pipe(gulp.dest(distFiles.js));
 });
-
+// =========================================================================================================
 // 版本号控制
-var cssDistFiles = [
-  './app/prd/styles/app.css'
-];
-var jsDistFiles = [
-  './app/prd/scripts/app.js'
-];
 gulp.task('ver', function () {
-  gulp.src(cssDistFiles)
+  gulp.src(versionFiles.css)
     // 生成 name-MD5.css
     .pipe(rev())
-    .pipe(gulp.dest('./app/prd/styles'))
-
+    .pipe(gulp.dest(distFiles.scss))
     // 生成 rev-manifest.json(映射)
     .pipe(rev.manifest())
-    .pipe(gulp.dest('./app/ver/styles'))
+    .pipe(gulp.dest(version.css));
 
-  gulp.src(jsDistFiles)
+  gulp.src(versionFiles.js)
     // 生成 name-MD5.css
     .pipe(rev())
-    .pipe(gulp.dest('./app/prd/scripts'))
-
+    .pipe(gulp.dest(distFiles.js))
     // 生成 rev-manifest.json(映射)
     .pipe(rev.manifest())
-    .pipe(gulp.dest('./app/ver/scripts'))
+    .pipe(gulp.dest(version.js));
 });
-gulp.task('html', function () {
-  gulp.src(['./app/ver/**/*.json', './app/*.html'])
+gulp.task('htmlVer', function () {
+  gulp.src([version.htmlVer, versionFiles.html])
     .pipe(revCollector())
-    .pipe(gulp.dest('./app'));
+    .pipe(gulp.dest(distFiles.html));
 });
-gulp.task('min', ['ver', 'html']);
 
+// =========================================================================================================
 // gulp watch
-gulp.task('watch', function () {
-  gulp.watch('./*.html', ['copy-index']);
-  gulp.watch('./src/styles/**/*.scss', ['sass']);
-  gulp.watch('./src/styles/**/*.css', ['css']);
-  gulp.watch('./src/scripts/**/*.js', ['packjs']);
+gulp.task('watch',['html','sass','js'], function () {
+  gulp.watch(srcFiles.html, ['html']);
+  gulp.watch(srcFiles.scss, ['sass']);
+  gulp.watch(srcFiles.js, ['js']);
 });
 
 // 设置默认task
